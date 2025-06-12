@@ -7,11 +7,11 @@ const Page = async () => {
 
   return (
     <>
-      <h3>
-        <Agent userName={user?.name} userId={user?.id} type="generate" />
-      </h3>
+      {user && <h3>
+        <Agent userName={user.name} userId={user.id} resumeUrl={user?.resumeUrl} type="generate" />
+      </h3>}
     </>
   )
 }
 
-export default Page
+export default Page;

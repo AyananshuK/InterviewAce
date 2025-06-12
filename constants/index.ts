@@ -97,65 +97,65 @@ export const mappings = {
   "aws amplify": "amplify",
 };
 
-export const interviewer: CreateAssistantDTO = {
-  name: "Interviewer",
-  firstMessage:
-    "Hello! Thank you for taking the time to speak with me today. I'm excited to learn more about you and your experience.",
-  transcriber: {
-    provider: "deepgram",
-    model: "nova-2",
-    language: "en",
-  },
-  voice: {
-    // provider: "11labs",
-    // voiceId: "sarah",
-    // stability: 0.4,
-    // similarityBoost: 0.8,
-    // speed: 0.9,
-    // style: 0.5,
-    // useSpeakerBoost: true,
+// export const interviewer: CreateAssistantDTO = {
+//   name: "Interviewer",
+//   firstMessage:
+//     "Hello! Thank you for taking the time to speak with me today. I'm excited to learn more about you and your experience.",
+//   transcriber: {
+//     provider: "deepgram",
+//     model: "nova-2",
+//     language: "en",
+//   },
+//   voice: {
+//     // provider: "11labs",
+//     // voiceId: "sarah",
+//     // stability: 0.4,
+//     // similarityBoost: 0.8,
+//     // speed: 0.9,
+//     // style: 0.5,
+//     // useSpeakerBoost: true,
 
-    voiceId: "Spencer",
-    provider: "vapi"
-  },
-  model: {
-    provider: "openai",
-    model: "gpt-4",
-    messages: [
-      {
-        role: "system",
-        content: `You are a professional job interviewer conducting a real-time voice interview with a candidate. Your goal is to assess their qualifications, motivation, and fit for the role.
+//     voiceId: "Spencer",
+//     provider: "vapi"
+//   },
+//   model: {
+//     provider: "openai",
+//     model: "gpt-4",
+//     messages: [
+//       {
+//         role: "system",
+//         content: `You are a professional job interviewer conducting a real-time voice interview with a candidate. Your goal is to assess their qualifications, motivation, and fit for the role.
 
-Interview Guidelines:
-Follow the structured question flow:
-{{questions}}
+// Interview Guidelines:
+// Follow the structured question flow:
+// {{questions}}
 
-Engage naturally & react appropriately:
-Listen actively to responses and acknowledge them before moving forward.
-Ask brief follow-up questions if a response is vague or requires more detail.
-Keep the conversation flowing smoothly while maintaining control.
-Be professional, yet warm and welcoming:
+// Engage naturally & react appropriately:
+// Listen actively to responses and acknowledge them before moving forward.
+// Ask brief follow-up questions if a response is vague or requires more detail.
+// Keep the conversation flowing smoothly while maintaining control.
+// Be professional, yet warm and welcoming:
 
-Use official yet friendly language.
-Keep responses concise and to the point (like in a real voice interview).
-Avoid robotic phrasing—sound natural and conversational.
-Answer the candidate’s questions professionally:
+// Use official yet friendly language.
+// Keep responses concise and to the point (like in a real voice interview).
+// Avoid robotic phrasing—sound natural and conversational.
+// Answer the candidate’s questions professionally:
 
-If asked about the role, company, or expectations, provide a clear and relevant answer.
-If unsure, redirect the candidate to HR for more details.
+// If asked about the role, company, or expectations, provide a clear and relevant answer.
+// If unsure, redirect the candidate to HR for more details.
 
-Conclude the interview properly:
-Thank the candidate for their time.
-Inform them that the company will reach out soon with feedback.
-End the conversation on a polite and positive note.
+// Conclude the interview properly:
+// Thank the candidate for their time.
+// Inform them that the company will reach out soon with feedback.
+// End the conversation on a polite and positive note.
 
-- Be sure to be professional and polite.
-- Keep all your responses short and simple. Use official language, but be kind and welcoming.
-- This is a voice conversation, so keep your responses short, like in a real conversation. Don't ramble for too long.`,
-      },
-    ],
-  },
-};
+// - Be sure to be professional and polite.
+// - Keep all your responses short and simple. Use official language, but be kind and welcoming.
+// - This is a voice conversation, so keep your responses short, like in a real conversation. Don't ramble for too long.`,
+//       },
+//     ],
+//   },
+// };
 
 export const feedbackSchema = z.object({
   totalScore: z.number(),
@@ -189,6 +189,21 @@ export const feedbackSchema = z.object({
   strengths: z.array(z.string()),
   areasForImprovement: z.array(z.string()),
   finalAssessment: z.string(),
+});
+
+export const generateInterviewFormSchema = z.object({
+  role: z.string().min(1, "Job role is required."),
+  level: z.enum(["Junior", "Mid-level", "Senior", "Lead", ""], {
+    errorMap: () => ({ message: "Focus type must be 'Junior', 'Mid-level', 'Senior', 'Lead'." }),
+  }),
+  techStack: z.string().min(1, "Tech stack is required."),
+  type: z.enum(["Behavioral", "Technical", "Mixed or Balanced", ""], {
+    errorMap: () => ({ message: "Focus type must be 'Behavioral', 'Technical', or 'Mixed/Balanced'." }),
+  }),
+  amount: z.number()
+    .int("Amount of questions must be an integer.")
+    .min(3, "At least 3 questions are required.")
+    .max(15, "Cannot generate more than 15 questions."),
 });
 
 export const interviewCovers = [
@@ -244,7 +259,7 @@ export const dummyInterviews: Interview[] = [
 //           "y": -55.400883373562294
 //         }
 //       },
-//       "prompt": "Hello {{ userName }}! Let's prepare your interview. I'll ask you a few questions and generate a perfect interview for you, Are you ready?",
+//       "prompt": "Let's prepare your interview. I'll ask you a few questions and generate a perfect interview for you, Are you ready?",
 //       "model": {
 //         "model": "gpt-4o",
 //         "provider": "openai",
@@ -257,23 +272,14 @@ export const dummyInterviews: Interview[] = [
 //       },
 //       "transcriber": {
 //         "model": "nova-3",
-//         "keyterm": [],
 //         "language": "en",
-//         "numerals": false,
 //         "provider": "deepgram",
-//         "mipOptOut": false,
-//         "endpointing": 20,
-//         "smartFormat": true,
-//         "confidenceThreshold": 0.4
+//         "mipOptOut": true
 //       },
 //       "variableExtractionPlan": {
 //         "output": [
 //           {
-//             "enum": [
-//               "entry",
-//               "mid",
-//               "senior"
-//             ],
+//             "enum": [],
 //             "type": "string",
 //             "title": "level",
 //             "description": "The job experience level."
@@ -297,11 +303,7 @@ export const dummyInterviews: Interview[] = [
 //             "description": "What role would you like to train for? (For example Frontend, Backend, Fullstack, Design, UX etc.)"
 //           },
 //           {
-//             "enum": [
-//               "technical",
-//               "behavioral",
-//               "mixed"
-//             ],
+//             "enum": [],
 //             "type": "string",
 //             "title": "type",
 //             "description": "What type of the interview should it be? (technical / behavioral / mix of technical and behavioral)"
@@ -309,7 +311,7 @@ export const dummyInterviews: Interview[] = [
 //         ]
 //       },
 //       "messagePlan": {
-//         "firstMessage": ""
+//         "firstMessage": "Hello {{ userName }}"
 //       }
 //     },
 //     {
@@ -359,6 +361,11 @@ export const dummyInterviews: Interview[] = [
 //               "value": "{{ userId }}",
 //               "description": ""
 //             },
+//             "resumeUrl": {
+//               "type": "string",
+//               "value": "{{ resumeUrl }}",
+//               "description": ""
+//             },
 //             "techStack": {
 //               "type": "string",
 //               "value": "{{ techStack }}",
@@ -380,7 +387,7 @@ export const dummyInterviews: Interview[] = [
 //         "messages": [
 //           {
 //             "type": "request-failed",
-//             "content": "Interview generation failed. Please try again.",
+//             "content": "Interview generation failed. Please try again. Sorry for the inconvenience.",
 //             "endCallAfterSpokenEnabled": true
 //           }
 //         ]
@@ -405,6 +412,11 @@ export const dummyInterviews: Interview[] = [
 //       "voice": {
 //         "voiceId": "Spencer",
 //         "provider": "vapi"
+//       },
+//       "transcriber": {
+//         "model": "nova-3",
+//         "language": "en",
+//         "provider": "deepgram"
 //       },
 //       "messagePlan": {
 //         "firstMessage": ""
@@ -438,7 +450,7 @@ export const dummyInterviews: Interview[] = [
 //       "to": "API Request",
 //       "condition": {
 //         "type": "ai",
-//         "prompt": "If user provided all the required variables."
+//         "prompt": "All the variables are extracted"
 //       }
 //     },
 //     {
@@ -452,3 +464,5 @@ export const dummyInterviews: Interview[] = [
 //   ],
 //   "globalPrompt": "You are a voice assistant helping with creating new AI interviewers. Your task is to collect data from the user. Remember that this is a voice conversation - do not use any special characters. Do a friendly conversation."
 // }
+
+

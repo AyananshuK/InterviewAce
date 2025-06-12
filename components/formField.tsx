@@ -13,7 +13,7 @@ interface FormFieldProps<T extends FieldValues> {
   name: Path<T>;
   label: string;
   placeholder?: string;
-  type?: "text" | "email" | "password" | "file";
+  type?: "text" | "email" | "password" | "file" | "number";
 }
 
 const FormField = <T extends FieldValues>({
@@ -30,7 +30,17 @@ const FormField = <T extends FieldValues>({
       <FormItem>
         <FormLabel className="label">{label}</FormLabel>
         <FormControl>
-          <Input className="input" placeholder={placeholder} type={type} {...field} />
+          <Input
+            className="input"
+            placeholder={placeholder}
+            type={type}
+            onWheel={(e) => {
+              if (type === "number") {
+                (e.target as HTMLInputElement).blur();
+              }
+            }}
+            {...field}
+          />
         </FormControl>
         <FormMessage />
       </FormItem>

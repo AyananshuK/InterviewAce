@@ -23,6 +23,7 @@ interface Interview {
   userId: string;
   type: string;
   finalized: boolean;
+  coverImage?: string;
 }
 
 interface CreateFeedbackParams {
@@ -36,15 +37,19 @@ interface User {
   name: string;
   email: string;
   id: string;
+  resumeUrl?: string;
+  resumePublicId?: string;
 }
 
 interface InterviewCardProps {
-  interviewId?: string;
+  id?: string;
   userId?: string;
   role: string;
   type: string;
   techStack: string[];
-  createdAt?: string;   
+  createdAt?: string;
+  coverImage?: string;
+  level: string
 }
 
 interface AgentProps {
@@ -54,6 +59,7 @@ interface AgentProps {
   feedbackId?: string;
   type: "generate" | "interview";
   questions?: string[];
+  resumeUrl?: string;
 }
 
 interface RouteParams {
@@ -96,4 +102,10 @@ interface InterviewFormProps {
 
 interface TechIconProps {
   techStack: string[];
+}
+
+interface resumeUrlAndId {
+  userId?: string,
+  pdfUrl: string;
+  public_id: string;
 }

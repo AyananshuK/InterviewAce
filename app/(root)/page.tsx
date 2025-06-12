@@ -1,7 +1,11 @@
 import InterviewCard from "@/components/interviewCard";
 import { Button } from "@/components/ui/button";
-import { dummyInterviews } from "@/constants";
-import { getCurrentUser, getInterviewByUserId, getLatestInterviews } from "@/lib/actions/auth_action";
+import UploadResume from "@/components/uploadResume";
+import { getCurrentUser } from "@/lib/actions/auth_action";
+import {
+  getInterviewByUserId,
+  getLatestInterviewsByOthers,
+} from "@/lib/actions/general_actions";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -10,12 +14,11 @@ const page = async () => {
 
   const [userInterviews, latestInterviews] = await Promise.all([
     await getInterviewByUserId(user?.id!),
-    await getLatestInterviews({userId: user?.id!})
-  ])
+    await getLatestInterviewsByOthers({ userId: user?.id! }),
+  ]);
 
-  const hasPastInterviews = userInterviews?.length > 0;
-  const hasUpcomingInterviews = latestInterviews?.length > 0;
-  
+  const hasPastInterviews = userInterviews && userInterviews?.length > 0;
+  const otherInterviews = latestInterviews && latestInterviews?.length > 0;
 
   return (
     <>
@@ -25,9 +28,19 @@ const page = async () => {
           <p className="text-lg">
             Pratice on real interview questions & get instant feedback
           </p>
-          <Button asChild className="btn-primary max-sm:w-full">
-            <Link href="/interview">Start an interview</Link>
-          </Button>
+
+          <div className="flex w-fit items-center rounded-full bg-primary-200 min-h-10">
+            <Button asChild className="btn-primary">
+              <Link href="/interview/form">Generate an interview</Link>
+            </Button>
+            <Button asChild className="btn-primary">
+              <Link href="/interview/voice">
+                <img src="/microphone.svg" alt="mic icon" className="h-5 w-5" />{" "}
+              </Link>
+            </Button>
+          </div>
+
+          {user && <UploadResume pdfLink={user.resumeUrl} />}
         </div>
         <Image
           src="/robot.png"
@@ -41,21 +54,31 @@ const page = async () => {
       <section className="flex flex-col gap-6 mt-8">
         <h2>Your interviews</h2>
         <div className="interviews-section">
-          {hasPastInterviews ? (userInterviews.map((interview) => (
-            <InterviewCard {...interview} key={interview.id}/>
-          ))) : (<p>You haven't taken any interview yet</p>)
-          }
+          {hasPastInterviews ? (
+            userInterviews.map((interview) => (
+              <InterviewCard {...interview} key={interview.id} />
+            ))
+          ) : (
+            <p>You haven't taken any interview yet</p>
+          )}
         </div>
       </section>
 
       <section className="flex flex-col gap-6 mt-8">
-        <h2>Take an interview</h2>
+        <h2>Other available interviews</h2>
         <div className="interviews-section">
           {/*  */}
-          {hasUpcomingInterviews ? (latestInterviews.map((interview) => (
-            <InterviewCard {...interview} key={interview.id}/>
-          ))) : (<p>There are no interviews available</p>)
-          }
+          {otherInterviews ? (
+            latestInterviews.map((interview) => (
+              <InterviewCard
+                {...interview}
+                userId={user?.id!}
+                key={interview.id}
+              />
+            ))
+          ) : (
+            <p>There are no interviews available</p>
+          )}
         </div>
       </section>
     </>

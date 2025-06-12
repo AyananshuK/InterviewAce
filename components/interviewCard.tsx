@@ -1,19 +1,28 @@
-import { getRandomInterviewCover } from "@/lib/utils";
 import dayjs from "dayjs";
 import Image from "next/image";
 import { Button } from "./ui/button";
 import Link from "next/link";
 import DisplayTechIcons from "./displayTechIcons";
+import { getFeedbackByInterviewId } from "@/lib/actions/general_actions";
 
-const InterviewCard = ({
-  interviewId,
+const InterviewCard = async ({
+  id,
   userId,
   role,
   type,
   techStack,
   createdAt,
+  coverImage,
+  level
 }: InterviewCardProps) => {
-  const feedback = null as Feedback | null;
+  const feedback =
+    userId && id
+      ? await getFeedbackByInterviewId({
+          interviewId: id,
+          userId,
+        })
+      : null;
+  
   const normalizeType = /mix/gi.test(type) ? "Mixed" : type;
   const formattedDate = dayjs(
     feedback?.createdAt || createdAt || Date.now()
@@ -28,7 +37,7 @@ const InterviewCard = ({
           </div>
 
           <Image
-            src={getRandomInterviewCover()}
+            src={coverImage? coverImage : ""}
             alt="cover image"
             width={90}
             height={90}
@@ -36,6 +45,7 @@ const InterviewCard = ({
           />
 
           <h3 className="mt-5 capitalize">{role} Interview</h3>
+          <h5 className="capitalize mt-2 text-light-100">{level}</h5>
           <div className="flex flex-row gap-5 mt-3">
             <div className="flex flex-row gap-2">
               <Image
@@ -61,13 +71,9 @@ const InterviewCard = ({
           <DisplayTechIcons techStack={techStack} />
           <Button className="btn-primary">
             <Link
-              href={
-                feedback
-                  ? `/interview/${interviewId}/feedback`
-                  : `/interview/${interviewId}`
-              }
+              href={feedback ? `/interview/${id}/feedback` : `/interview/${id}`}
             >
-              {feedback ? "Feedback" : "Interview"}
+              {feedback ? "See feedback" : "Attend Interview"}
             </Link>
           </Button>
         </div>

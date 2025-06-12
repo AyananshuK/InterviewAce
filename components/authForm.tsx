@@ -36,6 +36,10 @@ const AuthForm = ({ type }: { type: FormType }) => {
     },
   });
 
+  const {
+    formState: { isSubmitting },
+  } = form;
+
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
       if (type === "sign-up") {
@@ -110,7 +114,7 @@ const AuthForm = ({ type }: { type: FormType }) => {
               placeholder="password"
 							type="password"
             />
-            <Button type="submit" className="btn">
+            <Button type="submit" className="btn" disabled={isSubmitting}>
               {isSignIn ? "Sign in" : "Sign up"}
             </Button>
           </form>
