@@ -4,6 +4,7 @@ import UploadResume from "@/components/uploadResume";
 import { getCurrentUser } from "@/lib/actions/auth_action";
 import {
   getInterviewByUserId,
+  getInterviewsFromCurrentUserFeedbacks,
   getLatestInterviewsByOthers,
 } from "@/lib/actions/general_actions";
 import Image from "next/image";
@@ -12,8 +13,9 @@ import Link from "next/link";
 const page = async () => {
   const user = await getCurrentUser();
 
-  const [userInterviews, latestInterviews] = await Promise.all([
+  const [userInterviews, userTakenInterviews, latestInterviews] = await Promise.all([
     await getInterviewByUserId(user?.id!),
+    await getInterviewsFromCurrentUserFeedbacks(user?.id!),
     await getLatestInterviewsByOthers({ userId: user?.id! }),
   ]);
 
@@ -52,11 +54,28 @@ const page = async () => {
       </section>
 
       <section className="flex flex-col gap-6 mt-8">
-        <h2>Your interviews</h2>
+        <h2>Your Interviews</h2>
         <div className="interviews-section">
           {hasPastInterviews ? (
             userInterviews.map((interview) => (
               <InterviewCard {...interview} key={interview.id} />
+            ))
+          ) : (
+            <p>You haven't generated any interview yet</p>
+          )}
+        </div>
+      </section>
+
+      <section className="flex flex-col gap-6 mt-8">
+        <h2>Interviews Attempted</h2>
+        <div className="interviews-section">
+          {userTakenInterviews ? (
+            userTakenInterviews.map((interview) => (
+              <InterviewCard
+                {...interview}
+                userId={user?.id!}
+                key={interview.id}
+              />
             ))
           ) : (
             <p>You haven't taken any interview yet</p>
@@ -65,9 +84,8 @@ const page = async () => {
       </section>
 
       <section className="flex flex-col gap-6 mt-8">
-        <h2>Other available interviews</h2>
+        <h2>Other Available Interviews</h2>
         <div className="interviews-section">
-          {/*  */}
           {otherInterviews ? (
             latestInterviews.map((interview) => (
               <InterviewCard

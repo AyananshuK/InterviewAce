@@ -5,6 +5,7 @@ import { db } from "@/firebase/admin";
 import { google } from "@ai-sdk/google";
 import { generateObject } from "ai";
 import { getCurrentUser } from "./auth_action";
+import { FieldPath } from "firebase-admin/firestore";
 
 export async function getInterviewByUserId(
   userId: string
@@ -128,6 +129,57 @@ export async function getFeedbackByInterviewId(
 
   const feedbackDoc = feedback.docs[0];
   return { id: feedbackDoc.id, ...feedbackDoc.data() } as Feedback;
+}
+
+export async function getInterviewsFromCurrentUserFeedbacks(
+  userId: string
+): Promise< Omit<Interview, "userId">[] | null> {
+  if(!userId){
+    console.error("No user is logged in");
+    return [];
+  }
+
+  const feedbacks = await db
+    .collection("feedback")
+    .where("userId", "==", userId)
+    .get();
+
+  const interviewIds = new Set();
+  feedbacks.docs.forEach((feedback) => {
+    const interviewId = feedback.data().interviewId;
+    if(interviewId){
+      interviewIds.add(interviewId);
+    }
+  })
+
+  const uniqueInterviewIds = Array.from(interviewIds);
+  if (uniqueInterviewIds.length === 0) {
+    console.error("No feedbacks");
+    return [];
+  }
+
+  const interviews : Omit<Interview, "userId">[] = [];
+  const CHUNK_SIZE = 30;
+
+  for (let i = 0; i < uniqueInterviewIds.length; i += CHUNK_SIZE) {
+    const idChunk = uniqueInterviewIds.slice(i, i + CHUNK_SIZE);
+
+    const interviewSnapshots = await db
+      .collection("interviews")
+      .where(FieldPath.documentId(), "in", idChunk)
+      .get();
+
+    interviewSnapshots.docs.forEach((doc) => {
+      const data = doc.data();
+      const {userId, ...restOfData} = data;
+      interviews.push({
+        id: doc.id,
+        ...restOfData
+      } as Omit<Interview, "userId">);
+    });
+  }
+
+  return interviews;
 }
 
 export async function storeResumeInDB(params: resumeUrlAndId) {
